@@ -44,7 +44,9 @@
     "url": "https://github.com/alykoshin/mini-queue/issues"
   },
   "homepage": "https://github.com/alykoshin/mini-queue",
-  "dependencies": {},
+  "dependencies": {
+    "debug": "^2.2.0"
+  },
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-things": "^0.2.0",
