@@ -6,7 +6,7 @@ var chai = require('chai');
 var assert = chai.assert;
 var expect = chai.expect;
 
-process.env.DEBUG = 'queue';// + (process.env.DEBUG || '');
+process.env.DEBUG = 'queue';// + (process.env.DEBUG || ''); // does not work in tests
 
 //var JobQueue = require('../lib/job-queue');
 var JobQueue = require('../');

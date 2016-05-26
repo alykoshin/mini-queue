@@ -24,6 +24,50 @@ npm install --save mini-queue
 
 ## Usage
 
+```
+ QueueJob State Diagram (methods of JobQueue object)
+ ======================
+
+             |
+   createJob |
+      +------V-----+
+      | new        |
+      |            |
+      +---+--+--+--+
+          |  |  | _rejectJob                     +------------+
+          |  |  +--------------------------------> reject     |
+          |  |                                   |            |
+_startJob |  | _queueJob                         +------------+
+          |  +------------+
+          |               |
+          |         +-----v------+ _cancelJob
+          |         | queue      +-----------------+
+          |         |            |                 |
+          |         +---+----^---+                 |
+          | _dequeueJob |    |                     |
+          |             |    |                     |
+          |             |    | _queueJob           |
+          |         +---v----+---+   _cancelJob  +-V----------+
+          |         | dequeue    +---------------> cancel     |
+          |         |            |               |            |
+          |         +-----+------+               +------------+
+          |               | _startJob
+          |               |
+          |    +----------+
+          |    |
+      +---v----v---+  _terminateJob       +------------+
+      | process    +----------------------> terminate  |
+      |            |                      |(not implem)|
+      +-----+------+                      +------------+
+            |
+            |
+            |
+      +-----v------+
+      | complete   |
+      |            |
+      +------------+
+
+```
 
 ## Credits
 [Alexander](https://github.com/alykoshin/)
