@@ -1,6 +1,6 @@
 {
   "name": "mini-queue",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Job queue",
   "main": "./index.js",
   "engines": {
@@ -32,7 +32,7 @@
     "coverall": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "keywords": [
-      "job,queue"
+    "job,queue"
   ],
   "author": "Alexander <alykoshin@gmail.com>",
   "license": "MIT",
@@ -44,8 +44,7 @@
     "url": "https://github.com/alykoshin/mini-queue/issues"
   },
   "homepage": "https://github.com/alykoshin/mini-queue",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-things": "^0.2.0",
