@@ -27,12 +27,12 @@ var interval = setInterval(function() {
 // execute jobs
 
 queue.on('process', function(job, jobDone) {
-  debug('reject: ['+job.id+']');
+  debug('queue.on(\'process\'): ['+job.id+']');
   setTimeout(function() {
     jobDone();
   }, 1000);
 });
 
 queue.on('reject', function(job) {
-  debug('reject: ['+job.id+']');
+  debug('queue.on(\'reject\'): ['+job.id+']');
 });
