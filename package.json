@@ -45,18 +45,17 @@
   },
   "homepage": "https://github.com/alykoshin/mini-queue",
   "dependencies": {
-    "minimist": "^1.2.0"
   },
   "devDependencies": {
-    "chai": "^3.4.1",
+    "chai": "^3.5.0",
     "chai-things": "^0.2.0",
-    "coveralls": "^2.11.4",
-    "eslint": "^1.10.3",
-    "istanbul": "^0.4.1",
-    "jshint": "^2.8.0",
-    "jsinspect": "^0.7.2",
-    "mocha": "^2.3.4",
-    "mockery": "^1.4.0",
-    "sinon": "^1.17.2"
+    "coveralls": "^2.11.9",
+    "eslint": "^2.10.2",
+    "istanbul": "^0.4.3",
+    "jshint": "^2.9.2",
+    "jsinspect": "^0.8.0",
+    "mocha": "^2.5.3",
+    "mockery": "^1.7.0",
+    "sinon": "^1.17.4"
   }
 }
