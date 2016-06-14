@@ -174,6 +174,8 @@ describe('job-queue', function () {
         callbackCount--;
         // job1 becomes active immediately on next tick while job2 is still new
         expect(job2.status).equals('new');
+        // job1 is active and can be found by id
+        expect(queue.getJob(job1.id)).eql(job1);
         // run callback on next tick to allow job2 to change state from new->queue
         process.nextTick(function(){
           jobDone(err1, result1);
@@ -183,6 +185,8 @@ describe('job-queue', function () {
         job1.log('*** job1:complete');
         callbackCount--;
         expect(job2.status).equals('queue');
+        // job2 is queued and can be found by id
+        expect(queue.getJob(job2.id)).eql(job2);
         expect(err).equals(err1);
         expect(result).equals(result1);
       });
@@ -193,19 +197,27 @@ describe('job-queue', function () {
       });
       job2.on('dequeue', function() {
         job2.log('*** job2:dequeue');
+        // job2 is queued and can not be found by id
+        expect(queue.getJob(job2.id)).eql(null);
         expect(job1.status).equals('complete');
         callbackCount--;
       });
       job2.on('process', function(jobDone) {
         job2.log('*** job2:process');
         callbackCount--;
+        // job2 is active and can be found by id
+        expect(queue.getJob(job2.id)).eql(job2);
+
         expect(job1.status).equals('complete');
         jobDone(err2, result2);
       });
       job2.on('complete', function(err, result) {
         job2.log('*** job2:complete');
         callbackCount--;
-        expect(job1.status).equals('complete');
+        expect(job2.status).equals('complete');
+        // job2 is queued and can not be found by id
+        expect(queue.getJob(job2.id)).eql(null);
+
         expect(err).equals(err2);
         expect(result).equals(result2);
         expect(callbackCount).equals(0);
