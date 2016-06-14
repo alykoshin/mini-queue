@@ -16,12 +16,13 @@ var queue = new Queue({ activeLimit: 1, queuedLimit: 1 });
 var maxCount = 5,
     count = 0;
 
-var interval = setInterval(function() {        
+var interval = setInterval(function() {
   var jobData = {};
   // Create new job for the queue
   // If number of active job is less than `activeLimit`, the job will be started on Node's next tick.
   // Otherwise it will be queued.
-  queue.createJob(jobData); // we may pass some data to job when calling queue.createJob() function
+  var job = queue.createJob(jobData); // we may pass some data to job when calling queue.createJob() function
+
   if (++count >= maxCount) {
     clearInterval(interval);
   }
@@ -33,8 +34,13 @@ var interval = setInterval(function() {
 queue.on('process', function(job, jobDone) {
   debug('queue.on(\'process\'): ['+job.id+']');
   // Here the job starts
+  //
+  // It is also possible to do the processing inside job.on('process'), just be careful
+  // to call jobDone() callback once and only once.
+  //
+  // Value of job.data is set to value passed to queue.createJob()
+  //
   // Imitate job processing which takes 1 second to be finished
-  // job.data is set to value passed to queue.createJob()
   setTimeout(function() {
     // Call the callback to signal to the queue that the job has finished
     // and the next one may be started
