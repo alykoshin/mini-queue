@@ -8,7 +8,7 @@ process.env.DEBUG = 'queue,app';// + (process.env.DEBUG || '');
 var debug   = require('debug')('app');
 
 
-//var queue = require('express-queue');
+//var Queue = require('express-queue');
 var Queue = require('../');
 var queue = new Queue({ activeLimit: 1, queuedLimit: 1 });
 
@@ -16,8 +16,12 @@ var queue = new Queue({ activeLimit: 1, queuedLimit: 1 });
 var maxCount = 5,
     count = 0;
 
-var interval = setInterval(function() {
-  queue.createJob({});
+var interval = setInterval(function() {        
+  var jobData = {};
+  // Create new job for the queue
+  // If number of active job is less than `activeLimit`, the job will be started on Node's next tick.
+  // Otherwise it will be queued.
+  queue.createJob(jobData); // we may pass some data to job when calling queue.createJob() function
   if (++count >= maxCount) {
     clearInterval(interval);
   }
@@ -28,10 +32,18 @@ var interval = setInterval(function() {
 
 queue.on('process', function(job, jobDone) {
   debug('queue.on(\'process\'): ['+job.id+']');
+  // Here the job starts
+  // Imitate job processing which takes 1 second to be finished
+  // job.data is set to value passed to queue.createJob()
   setTimeout(function() {
+    // Call the callback to signal to the queue that the job has finished
+    // and the next one may be started
     jobDone();
+    // Now on Node's next tick the next job (if any) will be started
   }, 1000);
 });
+
+// Signal about jobs rejected due to queueLimit
 
 queue.on('reject', function(job) {
   debug('queue.on(\'reject\'): ['+job.id+']');
