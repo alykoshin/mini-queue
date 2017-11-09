@@ -76,6 +76,15 @@ describe('job-queue', function () {
       var job1 = queue.createJob();
       expect(queue.getLength()).equals(0);
       expect(job1.status).equals('new');
+      expect(job1.journalEntry).is.an('object');
+      expect(job1.journalEntry).to.have.a.property('id');
+      expect(job1.journalEntry).to.have.a.property('create');
+      expect(job1.journalEntry.id).equals(job1.id);
+      expect(queue.journal).to.have.a.property('default');
+      expect(queue.journal.default).to.have.a.property('default');
+      expect(queue.journal.default.default).to.be.an('array');
+      expect(queue.journal.default.default[0]).to.equals(job1.journalEntry);
+      //expect(queue.journal).equals('new');
     });
 
     // no 'queue' as job becomes active on next tick
@@ -120,6 +129,7 @@ describe('job-queue', function () {
       job1.on('complete', function (err, result) {
         expect(err).equals(err1);
         expect(result).equals(result1);
+        expect(job1.journalEntry).has.a.property('complete');
         return testDone();
       });
     });
@@ -185,6 +195,7 @@ describe('job-queue', function () {
         job1.log('*** job1:complete');
         callbackCount--;
         expect(job2.status).equals('queue');
+        expect(job2.journalEntry).has.a.property('queue');
         // job2 is queued and can be found by id
         expect(queue.getJob(job2.id)).eql(job2);
         expect(err).equals(err1);
@@ -193,6 +204,7 @@ describe('job-queue', function () {
       job2.on('queue', function() {
         job2.log('*** job2:queue');
         expect(job1.status).equals('process');
+        expect(job1.journalEntry).has.a.property('process');
         callbackCount--;
       });
       job2.on('dequeue', function() {
@@ -200,6 +212,7 @@ describe('job-queue', function () {
         // job2 is queued and can not be found by id
         expect(queue.getJob(job2.id)).eql(null);
         expect(job1.status).equals('complete');
+        expect(job1.journalEntry).has.a.property('complete');
         callbackCount--;
       });
       job2.on('process', function(jobDone) {
@@ -215,6 +228,7 @@ describe('job-queue', function () {
         job2.log('*** job2:complete');
         callbackCount--;
         expect(job2.status).equals('complete');
+        expect(job2.journalEntry).has.a.property('complete');
         // job2 is queued and can not be found by id
         expect(queue.getJob(job2.id)).eql(null);
 
@@ -228,25 +242,33 @@ describe('job-queue', function () {
     it('expect cancelJob to emit queue,dequeue,cancel', function (testDone) {
       var job2 = queue.createJob();
       expect(job2.status).equals('new');
+      expect(job2.journalEntry).has.a.property('new');
       var callbackCount = 3;
 
       job2.on('queue', function() {
         job2.log('*** job2:queue');
         expect(job1.status).equals('process');
+        expect(job1.journalEntry).has.a.property('process');
         expect(job2.status).equals('queue');
+        expect(job2.journalEntry).has.a.property('queue');
         callbackCount--;
         queue._cancelJob(job2);
       });
       job2.on('dequeue', function() {
         job2.log('*** job2:dequeue');
         expect(job1.status).equals('process');
+        expect(job1.journalEntry).has.a.property('process');
         expect(job2.status).equals('dequeue');
+        expect(job2.journalEntry).has.a.property('dequeue');
         callbackCount--;
       });
       job2.on('cancel', function() {
         job2.log('*** job2:cancel');
         expect(job1.status).equals('process');
+        expect(job1.journalEntry).has.a.property('process');
         expect(job2.status).equals('cancel');
+        expect(job2.journalEntry).has.a.property('cancel');
+        expect(queue.journal['default']['default'].length = 2);
         callbackCount--;
         expect(callbackCount).equals(0);
         testDone();
