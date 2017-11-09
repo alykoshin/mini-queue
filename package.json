@@ -4,7 +4,7 @@
   "description": "Job queue",
   "main": "./index.js",
   "engines": {
-    "node": ">=0.10"
+    "node": ">=4"
   },
   "scripts": {
     "nsp": "nsp check",
