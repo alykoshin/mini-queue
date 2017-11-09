@@ -66,24 +66,32 @@ describe('job-queue', function () {
   });
 
   describe('jobs: 1', function() {
-    var queue;
+    let queue;
 
     beforeEach('beforeEach', function () {
       queue = new JobQueue();
     });
 
     it('expect after createJob() getLength() = 0 (same tick)', function () {
-      var job1 = queue.createJob();
+      const jobName   = 'testJob';
+      const groupName = 'testGroup';
+      const job1 = queue.createJob({}, { name: jobName, group: groupName });
       expect(queue.getLength()).equals(0);
+
       expect(job1.status).equals('new');
+      expect(job1.name).equals(jobName);
+      expect(job1.group).equals(groupName);
+
       expect(job1.journalEntry).is.an('object');
       expect(job1.journalEntry).to.have.a.property('id');
       expect(job1.journalEntry).to.have.a.property('create');
       expect(job1.journalEntry.id).equals(job1.id);
-      expect(queue.journal).to.have.a.property('default');
-      expect(queue.journal.default).to.have.a.property('default');
-      expect(queue.journal.default.default).to.be.an('array');
-      expect(queue.journal.default.default[0]).to.equals(job1.journalEntry);
+
+      expect(queue.journal).to.have.a.property(groupName);
+      expect(queue.journal[groupName]).to.have.a.property(jobName);
+      expect(queue.journal[groupName][jobName]).to.be.an('array');
+      expect(queue.journal[groupName][jobName][0]).to.equals(job1.journalEntry);
+
       //expect(queue.journal).equals('new');
     });
 
