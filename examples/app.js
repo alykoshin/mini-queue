@@ -5,12 +5,13 @@
 "use strict";
 
 process.env.DEBUG = 'queue,app';// + (process.env.DEBUG || '');
-var debug   = require('debug')('app');
+var util   = require('util');
+var debug  = require('debug')('app');
 
 
 //var Queue = require('express-queue');
 var Queue = require('../');
-var queue = new Queue({ activeLimit: 1, queuedLimit: 1 });
+var queue = new Queue({ activeLimit: 1, queuedLimit: 1, maxJournalLength: 4 });
 
 // create jobs
 var maxCount = 5,
@@ -21,10 +22,17 @@ var interval = setInterval(function() {
   // Create new job for the queue
   // If number of active job is less than `activeLimit`, the job will be started on Node's next tick.
   // Otherwise it will be queued.
-  var job = queue.createJob(jobData); // we may pass some data to job when calling queue.createJob() function
+  var job = queue.createJob(
+    jobData, // we may pass some data to job when calling queue.createJob() function
+    { group: 'group', name: 'name' } // group/name to be used for journal
+  );
 
   if (++count >= maxCount) {
     clearInterval(interval);
+
+    setTimeout(()=> { // after last job has finished
+      debug('journal:', util.inspect(queue.journal, {depth:3}));
+      }, 1500);
   }
 }, 500);
 
@@ -32,7 +40,7 @@ var interval = setInterval(function() {
 // execute jobs
 
 queue.on('process', function(job, jobDone) {
-  debug('queue.on(\'process\'): ['+job.id+']');
+  debug(`queue.on('process'): [${job.id}]: status: ${job.status}, journalEntry: ${JSON.stringify(job.journalEntry)}`);
   // Here the job starts
   //
   // It is also possible to do the processing inside job.on('process'), just be careful
@@ -52,5 +60,5 @@ queue.on('process', function(job, jobDone) {
 // Signal about jobs rejected due to queueLimit
 
 queue.on('reject', function(job) {
-  debug('queue.on(\'reject\'): ['+job.id+']');
+  debug(`queue.on('reject'): [${job.id}]: status: ${job.status}, journalEntry: ${JSON.stringify(job.journalEntry)}`);
 });

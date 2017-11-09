@@ -69,6 +69,54 @@ _startJob |  | _queueJob                         +------------+
 
 ```
 
+`job.journalEntry` for each state (`queue`, `dequeue`, `process`, `complete`, `reject`, `cancel`) stores the time when transition to state occured. If several changes has occured, only the last time is stored(`id` is job identifier `job.id`):   
+
+```json
+{
+  "id": 4,
+  "create": 2017-11-09T15:25:31.842Z,
+  "queue": 2017-11-09T15:25:31.842Z,
+  "dequeue": 2017-11-09T15:25:32.350Z,
+  "process": 2017-11-09T15:25:32.350Z,
+  "complete": 2017-11-09T15:25:33.352Z 
+}
+```
+
+For each `group` and `name` as provided in `option` for `createJob()`, `journalEntries` are kept ar array in `queue.journal` (newest is the first, oldest is the last).
+
+Example (`group` and `name` not set, `default` value is used):
+
+```json
+{ "default": 
+  { "default": 
+    [
+      { "id": 5,
+        "create": 2017-11-09T15:25:32.342Z,
+        "reject": 2017-11-09T15:25:32.345Z },
+      { "id": 4,
+        "create": 2017-11-09T15:25:31.842Z,
+        "queue": 2017-11-09T15:25:31.842Z,
+        "dequeue": 2017-11-09T15:25:32.350Z,
+        "process": 2017-11-09T15:25:32.350Z,
+        "complete": 2017-11-09T15:25:33.352Z },
+      { "id": 3,
+        "create": 2017-11-09T15:25:31.340Z,
+        "reject": 2017-11-09T15:25:31.341Z },
+      { "id": 2,
+        "create": 2017-11-09T15:25:30.839Z,
+        "queue": 2017-11-09T15:25:30.840Z,
+        "dequeue": 2017-11-09T15:25:31.348Z,
+        "process": 2017-11-09T15:25:31.349Z,
+        "complete": 2017-11-09T15:25:32.350Z },
+      { "id": 1,
+        "create": 2017-11-09T15:25:30.334Z,
+        "process": 2017-11-09T15:25:30.339Z,
+        "complete": 2017-11-09T15:25:31.348Z } ] } }
+``` 
+
+Up to `maxJournalLength` option for `createJob()` records are kept.
+
+
 ## Example
 
 You may find this example in `demo` subdirectory of the package.
@@ -77,25 +125,34 @@ You may find this example in `demo` subdirectory of the package.
 "use strict";
 
 process.env.DEBUG = 'queue,app';// + (process.env.DEBUG || '');
-var debug   = require('debug')('app');
+var util   = require('util');
+var debug  = require('debug')('app');
 
 
-var Queue = require('express-queue');
-//var Queue = require('../');
-var queue = new Queue({ activeLimit: 1, queuedLimit: 1 });
+//var Queue = require('express-queue');
+var Queue = require('../');
+var queue = new Queue({ activeLimit: 1, queuedLimit: 1, maxJournalLength: 4 });
 
 // create jobs
 var maxCount = 5,
     count = 0;
 
-var interval = setInterval(function() {        
+var interval = setInterval(function() {
   var jobData = {};
   // Create new job for the queue
   // If number of active job is less than `activeLimit`, the job will be started on Node's next tick.
   // Otherwise it will be queued.
-  queue.createJob(jobData); // we may pass some data to job when calling queue.createJob() function
+  var job = queue.createJob(
+    jobData, // we may pass some data to job when calling queue.createJob() function
+    { group: 'group', name: 'name' } // group/name to be used for journal
+  );
+
   if (++count >= maxCount) {
     clearInterval(interval);
+
+    setTimeout(()=> { // after last job has finished
+      debug('journal:', util.inspect(queue.journal, {depth:3}));
+      }, 1500); 
   }
 }, 500);
 
@@ -103,10 +160,15 @@ var interval = setInterval(function() {
 // execute jobs
 
 queue.on('process', function(job, jobDone) {
-  debug('queue.on(\'process\'): ['+job.id+']');
+  debug(`queue.on('process'): [${job.id}]: status: ${job.status}, journalEntry: ${JSON.stringify(job.journalEntry)}`);
   // Here the job starts
+  //
+  // It is also possible to do the processing inside job.on('process'), just be careful
+  // to call jobDone() callback once and only once.
+  //
+  // Value of job.data is set to value passed to queue.createJob()
+  //
   // Imitate job processing which takes 1 second to be finished
-  // job.data is set to value passed to queue.createJob()
   setTimeout(function() {
     // Call the callback to signal to the queue that the job has finished
     // and the next one may be started
@@ -118,7 +180,7 @@ queue.on('process', function(job, jobDone) {
 // Signal about jobs rejected due to queueLimit
 
 queue.on('reject', function(job) {
-  debug('queue.on(\'reject\'): ['+job.id+']');
+  debug(`queue.on('reject'): [${job.id}]: status: ${job.status}, journalEntry: ${JSON.stringify(job.journalEntry)}`);
 });
 ```
 
