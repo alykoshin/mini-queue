@@ -84,7 +84,7 @@ describe('job-queue', function () {
 
       expect(job1.journalEntry).is.an('object');
       expect(job1.journalEntry).to.have.a.property('id');
-      expect(job1.journalEntry).to.have.a.property('create');
+      expect(job1.journalEntry).to.have.a.property('new');
       expect(job1.journalEntry.id).equals(job1.id);
 
       expect(queue.journal).to.have.a.property(groupName);
