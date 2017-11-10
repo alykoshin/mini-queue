@@ -72,15 +72,13 @@ _startJob |  | _queueJob                         +------------+
 `job.journalEntry` for each state (`queue`, `dequeue`, `process`, `complete`, `reject`, `cancel`) stores the time when transition to state occured. If several changes has occured, only the last time is stored(`id` is job identifier `job.id`):   
 
 ```json
-{
-  "id": 4,
-  "new": 2017-11-09T15:25:31.842Z,
-  "create": 2017-11-09T15:25:31.842Z,
-  "queue": 2017-11-09T15:25:31.842Z,
-  "dequeue": 2017-11-09T15:25:32.350Z,
-  "process": 2017-11-09T15:25:32.350Z,
-  "complete": 2017-11-09T15:25:33.352Z 
-}
+       { id: 4,
+          new: 2017-11-10T08:37:17.428Z,
+          queue: 2017-11-10T08:37:17.428Z,
+          dequeue: 2017-11-10T08:37:17.941Z,
+          process: 2017-11-10T08:37:17.941Z,
+          complete: 2017-11-10T08:37:18.943Z },
+
 ```
 
 For each `group` and `name` as provided in `option` for `createJob()`, `journalEntries` are kept ar array in `queue.journal` (newest is the first, oldest is the last).
@@ -88,19 +86,19 @@ For each `group` and `name` as provided in `option` for `createJob()`, `journalE
 Example (`group` and `name` not set, `default` value is used):
 
 ```json
-{ "default": 
-  { "default": 
-    [
-      { "id": 5,
-        "new": 2017-11-09T15:25:32.342Z,
-        "create": 2017-11-09T15:25:32.342Z,
-        "reject": 2017-11-09T15:25:32.345Z },
- . . .
-       { "id": 1,
-        "new": 2017-11-09T15:25:30.334Z,
-        "create": 2017-11-09T15:25:30.334Z,
-        "process": 2017-11-09T15:25:30.339Z,
-        "complete": 2017-11-09T15:25:31.348Z } ] } }
+journal: { group: 
+   { name: 
+      [ { id: 5,
+          new: 2017-11-10T08:37:17.929Z,
+          reject: 2017-11-10T08:37:17.929Z },
+. . .
+        { id: 2,
+          new: 2017-11-10T08:37:16.426Z,
+          queue: 2017-11-10T08:37:16.427Z,
+          dequeue: 2017-11-10T08:37:16.937Z,
+          process: 2017-11-10T08:37:16.937Z,
+          complete: 2017-11-10T08:37:17.941Z } ] } } +2s
+
 ``` 
 
 Up to `maxJournalLength` option for `createJob()` records are kept.
