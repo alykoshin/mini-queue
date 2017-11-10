@@ -40,7 +40,7 @@ var interval = setInterval(function() {
 // execute jobs
 
 queue.on('process', function(job, jobDone) {
-  debug(`queue.on('process'): [${job.id}]: status: ${job.status}, journalEntry: ${JSON.stringify(job.journalEntry)}`);
+  debug(`queue.on('process'): [${job.id}]: state: ${job.state}, journalEntry: ${JSON.stringify(job.journalEntry)}`);
   // Here the job starts
   //
   // It is also possible to do the processing inside job.on('process'), just be careful
@@ -60,5 +60,5 @@ queue.on('process', function(job, jobDone) {
 // Signal about jobs rejected due to queueLimit
 
 queue.on('reject', function(job) {
-  debug(`queue.on('reject'): [${job.id}]: status: ${job.status}, journalEntry: ${JSON.stringify(job.journalEntry)}`);
+  debug(`queue.on('reject'): [${job.id}]: state: ${job.state}, journalEntry: ${JSON.stringify(job.journalEntry)}`);
 });

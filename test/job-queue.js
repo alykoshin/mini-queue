@@ -33,12 +33,12 @@ describe('job-queue', function () {
       job1.on('process', function(jobDone) {
         job1.log('*** job1:process');
         // job1 becomes active immediately on next tick while job2 is still new
-        expect(job2.status).equals('new');
+        expect(job2.state).equals('new');
         // run following tests on next tick to allow job2, job3 to change state from new->queue or reject
         process.nextTick(function(){
           //callback(err1, result1);
-          expect(job2.status).equals('queue');
-          expect(job3.status).equals('reject');
+          expect(job2.state).equals('queue');
+          expect(job3.state).equals('reject');
 
           testDone();
         });
@@ -78,7 +78,7 @@ describe('job-queue', function () {
       const job1 = queue.createJob({}, { name: jobName, group: groupName });
       expect(queue.getLength()).equals(0);
 
-      expect(job1.status).equals('new');
+      expect(job1.state).equals('new');
       expect(job1.name).equals(jobName);
       expect(job1.group).equals(groupName);
 
@@ -98,7 +98,7 @@ describe('job-queue', function () {
     // no 'queue' as job becomes active on next tick
     //it('expect queue.createJob() triggers job.on(queue) for empty queue', function (done) {
     //  var job = queue.createJob();
-    //  //expect(job.status).equals('queue');
+    //  //expect(job.state).equals('queue');
     //  job.on('queue', function () {
     //    return done();
     //  });
@@ -106,7 +106,7 @@ describe('job-queue', function () {
 
     it('expect queue.createJob() triggers job.on(process) for empty queue', function (testDone) {
       var job1 = queue.createJob();
-      expect(job1.status).equals('new');
+      expect(job1.state).equals('new');
       // no 'queue' as job becomes active on next tick
       //var callbackCount = 2;
       //job.on('queue', function () {
@@ -177,21 +177,21 @@ describe('job-queue', function () {
 
       var job2 = queue.createJob();
 
-      expect(job1.status).equals('new');
-      expect(job2.status).equals('new');
+      expect(job1.state).equals('new');
+      expect(job2.state).equals('new');
 
       // no 'queue' as job1 becomes active on next tick
       //job1.on('queue', function() {
       //  console.log('job1:queue');
       //callbackCount--;
-      //  expect(job2.status).equals('new');
+      //  expect(job2.state).equals('new');
       //  callbackCount++;
       //});
       job1.on('process', function(jobDone) {
         job1.log('*** job1:process');
         callbackCount--;
         // job1 becomes active immediately on next tick while job2 is still new
-        expect(job2.status).equals('new');
+        expect(job2.state).equals('new');
         // job1 is active and can be found by id
         expect(queue.getJob(job1.id)).eql(job1);
         // run callback on next tick to allow job2 to change state from new->queue
@@ -202,7 +202,7 @@ describe('job-queue', function () {
       job1.on('complete', function(err, result) {
         job1.log('*** job1:complete');
         callbackCount--;
-        expect(job2.status).equals('queue');
+        expect(job2.state).equals('queue');
         expect(job2.journalEntry).has.a.property('queue');
         // job2 is queued and can be found by id
         expect(queue.getJob(job2.id)).eql(job2);
@@ -211,7 +211,7 @@ describe('job-queue', function () {
       });
       job2.on('queue', function() {
         job2.log('*** job2:queue');
-        expect(job1.status).equals('process');
+        expect(job1.state).equals('process');
         expect(job1.journalEntry).has.a.property('process');
         callbackCount--;
       });
@@ -219,7 +219,7 @@ describe('job-queue', function () {
         job2.log('*** job2:dequeue');
         // job2 is queued and can not be found by id
         expect(queue.getJob(job2.id)).eql(null);
-        expect(job1.status).equals('complete');
+        expect(job1.state).equals('complete');
         expect(job1.journalEntry).has.a.property('complete');
         callbackCount--;
       });
@@ -229,13 +229,13 @@ describe('job-queue', function () {
         // job2 is active and can be found by id
         expect(queue.getJob(job2.id)).eql(job2);
 
-        expect(job1.status).equals('complete');
+        expect(job1.state).equals('complete');
         jobDone(err2, result2);
       });
       job2.on('complete', function(err, result) {
         job2.log('*** job2:complete');
         callbackCount--;
-        expect(job2.status).equals('complete');
+        expect(job2.state).equals('complete');
         expect(job2.journalEntry).has.a.property('complete');
         // job2 is queued and can not be found by id
         expect(queue.getJob(job2.id)).eql(null);
@@ -249,32 +249,32 @@ describe('job-queue', function () {
 
     it('expect cancelJob to emit queue,dequeue,cancel', function (testDone) {
       var job2 = queue.createJob();
-      expect(job2.status).equals('new');
+      expect(job2.state).equals('new');
       expect(job2.journalEntry).has.a.property('new');
       var callbackCount = 3;
 
       job2.on('queue', function() {
         job2.log('*** job2:queue');
-        expect(job1.status).equals('process');
+        expect(job1.state).equals('process');
         expect(job1.journalEntry).has.a.property('process');
-        expect(job2.status).equals('queue');
+        expect(job2.state).equals('queue');
         expect(job2.journalEntry).has.a.property('queue');
         callbackCount--;
         queue._cancelJob(job2);
       });
       job2.on('dequeue', function() {
         job2.log('*** job2:dequeue');
-        expect(job1.status).equals('process');
+        expect(job1.state).equals('process');
         expect(job1.journalEntry).has.a.property('process');
-        expect(job2.status).equals('dequeue');
+        expect(job2.state).equals('dequeue');
         expect(job2.journalEntry).has.a.property('dequeue');
         callbackCount--;
       });
       job2.on('cancel', function() {
         job2.log('*** job2:cancel');
-        expect(job1.status).equals('process');
+        expect(job1.state).equals('process');
         expect(job1.journalEntry).has.a.property('process');
-        expect(job2.status).equals('cancel');
+        expect(job2.state).equals('cancel');
         expect(job2.journalEntry).has.a.property('cancel');
         expect(queue.journal['default']['default'].length = 2);
         callbackCount--;
