@@ -32,7 +32,7 @@ var interval = setInterval(function() {
 
     setTimeout(()=> { // after last job has finished
       debug('journal:', util.inspect(queue.journal, {depth:3}));
-      }, 1500);
+      }, 1000+500+100);
   }
 }, 500);
 
